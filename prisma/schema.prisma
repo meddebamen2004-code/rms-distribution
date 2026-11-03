@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Table unique pour les trois rôles (héritage : une table + colonne role).
+// role vaut GERANT, MAGASINIER ou LIVREUR (validé avec Zod dans le code).
+model Utilisateur {
+  id                 Int       @id @default(autoincrement())
+  nom                String
+  identifiant        String    @unique
+  motDePasseHash     String
+  role               String
+  actif              Boolean   @default(true)
+  tentativesEchouees Int       @default(0)
+  bloqueJusqua       DateTime?
+  creeLe             DateTime  @default(now())
+}
+model Categorie {
+  id       Int       @id @default(autoincrement())
+  nom      String    @unique
+  produits Produit[]
+}
+
+model Produit {
+  id              Int       @id @default(autoincrement())
+  reference       String    @unique
+  nom             String
+  prix            Float
+  piecesParCarton Int
+  seuilMin        Int       @default(0)
+  datePeremption  DateTime?
+  archive         Boolean   @default(false)
+  categorieId     Int
+  categorie       Categorie @relation(fields: [categorieId], references: [id])
+}
