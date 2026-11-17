@@ -42,3 +42,52 @@ export const produitSchema = z.object({
 export const produitUpdateSchema = produitSchema
   .partial()
   .extend({ archive: z.boolean().optional() });
+  export const secteurSchema = z.object({
+  nom: z.string().trim().min(2, "Nom du secteur : 2 caractères minimum"),
+  ville: z.string().trim().min(2, "Ville : 2 caractères minimum"),
+});
+
+export const clientSchema = z.object({
+  nomCommerce: z.string().trim().min(1, "Nom du commerce requis"),
+  responsable: z.string().trim().min(1, "Responsable requis"),
+  telephone: z.string().trim().min(6, "Téléphone invalide"),
+  adresse: z.string().trim().min(1, "Adresse requise"),
+  secteurId: z.coerce.number().int().positive("Secteur requis"),
+});
+
+export const affectationSchema = z.object({
+  livreurId: z.coerce.number().int().positive("Livreur requis"),
+  secteurId: z.coerce.number().int().positive("Secteur requis"),
+  jour: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide"),
+});
+
+export const receptionSchema = z.object({
+  reference: z.string().trim().optional(),
+  lignes: z
+    .array(
+      z.object({
+        produitId: z.coerce.number().int().positive("Produit requis"),
+        cartons: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+        pieces: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+      })
+    )
+    .min(1, "Ajoutez au moins une ligne"),
+});
+
+export const ajustementSchema = z.object({
+  produitId: z.coerce.number().int().positive("Produit requis"),
+  sens: z.enum(["AJOUT", "RETRAIT"], { message: "Sens invalide" }),
+  cartons: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+  pieces: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+  motif: z.string().trim().min(5, "Motif obligatoire (5 caractères minimum)"),
+});
+
+export const decisionAjustementSchema = z
+  .object({
+    decision: z.enum(["VALIDER", "REFUSER"], { message: "Décision invalide" }),
+    commentaire: z.string().trim().optional(),
+  })
+  .refine(
+    (d) => d.decision === "VALIDER" || (d.commentaire && d.commentaire.length >= 3),
+    { message: "Un commentaire est obligatoire pour refuser", path: ["commentaire"] }
+  );

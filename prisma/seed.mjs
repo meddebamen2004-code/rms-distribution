@@ -7,6 +7,7 @@ const comptes = [
   { nom: "Gérant Démo", identifiant: "gerant", motDePasse: "gerant1234", role: "GERANT" },
   { nom: "Magasinier Démo", identifiant: "magasinier", motDePasse: "magasin1234", role: "MAGASINIER" },
   { nom: "Karim", identifiant: "karim", motDePasse: "livreur1234", role: "LIVREUR" },
+  { nom: "Sofia", identifiant: "sofia", motDePasse: "livreur1234", role: "LIVREUR" },
 ];
 
 for (const c of comptes) {
