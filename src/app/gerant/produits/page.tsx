@@ -1,76 +1,66 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
-import ProduitForm from "@/components/ProduitForm";
+import { cartonsEtPieces, stockParProduit } from "@/lib/stock";
+import PageHeader from "@/components/ui/PageHeader";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import ProduitModal from "@/components/ProduitModal";
+import ProduitsTable, { type ProduitRow } from "@/components/ProduitsTable";
 import CategorieForm from "@/components/CategorieForm";
-import ArchiveButton from "@/components/ArchiveButton";
 
 export default async function ProduitsPage() {
   await requireRole("GERANT");
 
-  const categories = await prisma.categorie.findMany({ orderBy: { nom: "asc" } });
-  const produits = await prisma.produit.findMany({
-    include: { categorie: true },
-    orderBy: [{ archive: "asc" }, { nom: "asc" }],
+  const [categories, produits, stock] = await Promise.all([
+    prisma.categorie.findMany({ orderBy: { nom: "asc" } }),
+    prisma.produit.findMany({
+      include: { categorie: true },
+      orderBy: [{ archive: "asc" }, { nom: "asc" }],
+    }),
+    stockParProduit(),
+  ]);
+
+  const rows: ProduitRow[] = produits.map((p) => {
+    const total = stock.get(p.id) ?? 0;
+    const { cartons, pieces } = cartonsEtPieces(total, p.piecesParCarton);
+    return {
+      id: p.id,
+      reference: p.reference,
+      nom: p.nom,
+      categorie: p.categorie.nom,
+      prix: p.prix,
+      piecesParCarton: p.piecesParCarton,
+      archive: p.archive,
+      stockLabel: `${cartons} cartons${pieces ? ` + ${pieces} p.` : ""}`,
+      bas: total < p.seuilMin,
+    };
   });
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-      <Link href="/gerant" className="text-blue-700 underline">
-        ← Espace gérant
-      </Link>
-      <h1 className="text-2xl font-bold">Produits</h1>
+    <>
+      <PageHeader
+        eyebrow="Catalogue"
+        title="Produits"
+        subtitle="Gérez les références disponibles au dépôt."
+        action={<ProduitModal categories={categories} />}
+      />
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">Catégories</h2>
-        <p className="text-gray-600">{categories.map((c) => c.nom).join(" · ") || "Aucune"}</p>
-        <CategorieForm />
-      </section>
+      <ProduitsTable rows={rows} categories={categories.map((c) => c.nom)} />
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">Nouveau produit</h2>
-        <ProduitForm categories={categories} />
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="font-semibold">Catalogue ({produits.length})</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2">Référence</th>
-                <th className="p-2">Nom</th>
-                <th className="p-2">Catégorie</th>
-                <th className="p-2">Prix</th>
-                <th className="p-2">Pièces/carton</th>
-                <th className="p-2">Seuil</th>
-                <th className="p-2">Péremption</th>
-                <th className="p-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {produits.map((p) => (
-                <tr key={p.id} className={p.archive ? "border-b text-gray-400" : "border-b"}>
-                  <td className="p-2">{p.reference}</td>
-                  <td className="p-2">
-                    {p.nom} {p.archive && <em>(archivé)</em>}
-                  </td>
-                  <td className="p-2">{p.categorie.nom}</td>
-                  <td className="p-2">{p.prix.toFixed(2)}</td>
-                  <td className="p-2">{p.piecesParCarton}</td>
-                  <td className="p-2">{p.seuilMin}</td>
-                  <td className="p-2">
-                    {p.datePeremption ? p.datePeremption.toLocaleDateString("fr-FR") : "-"}
-                  </td>
-                  <td className="p-2">
-                    <ArchiveButton id={p.id} archive={p.archive} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <Card className="mt-6 p-6">
+        <h2 className="text-base font-semibold text-slate-900">Catégories</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {categories.map((c) => (
+            <Badge key={c.id} tone="blue">
+              {c.nom}
+            </Badge>
+          ))}
+          {categories.length === 0 && <p className="text-sm text-slate-500">Aucune catégorie.</p>}
         </div>
-      </section>
-    </main>
+        <div className="mt-4">
+          <CategorieForm />
+        </div>
+      </Card>
+    </>
   );
 }

@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { HOME_BY_ROLE, type Role } from "@/lib/roles";
+import Alert from "@/components/ui/Alert";
+import Button from "@/components/ui/Button";
+import { inputCls, labelCls } from "@/components/ui/styles";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -29,24 +32,39 @@ export default function LoginForm() {
     router.refresh();
   }
 
-  const cls = "w-full rounded border p-2";
   return (
-    <form onSubmit={onSubmit} className="flex w-full max-w-sm flex-col gap-3">
-      <input name="identifiant" placeholder="Identifiant" required className={cls} />
-      <input
-        name="motDePasse"
-        type="password"
-        placeholder="Mot de passe"
-        required
-        className={cls}
-      />
-      {error && <p className="text-red-600">{error}</p>}
-      <button
-        disabled={loading}
-        className="rounded bg-blue-700 p-2 text-white disabled:opacity-50"
-      >
+    <form onSubmit={onSubmit} className="space-y-5">
+      {error && <Alert title="Connexion impossible">{error}</Alert>}
+      <div>
+        <label htmlFor="identifiant" className={labelCls}>
+          Identifiant
+        </label>
+        <input
+          id="identifiant"
+          name="identifiant"
+          placeholder="prenom.nom"
+          autoComplete="username"
+          required
+          className={inputCls}
+        />
+      </div>
+      <div>
+        <label htmlFor="motDePasse" className={labelCls}>
+          Mot de passe
+        </label>
+        <input
+          id="motDePasse"
+          name="motDePasse"
+          type="password"
+          placeholder="Votre mot de passe"
+          autoComplete="current-password"
+          required
+          className={inputCls}
+        />
+      </div>
+      <Button type="submit" disabled={loading} className="w-full py-3">
         {loading ? "Patientez..." : "Se connecter"}
-      </button>
+      </Button>
     </form>
   );
 }
