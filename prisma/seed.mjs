@@ -28,4 +28,14 @@ for (const nom of categories) {
   await prisma.categorie.upsert({ where: { nom }, update: {}, create: { nom } });
   console.log(`OK : catégorie ${nom}`);
 }
+
+const livreurs = await prisma.utilisateur.findMany({ where: { role: "LIVREUR" } });
+for (const l of livreurs) {
+  await prisma.camion.upsert({
+    where: { livreurId: l.id },
+    update: {},
+    create: { immatriculation: `CAM-${String(l.id).padStart(3, "0")}`, livreurId: l.id },
+  });
+  console.log(`OK : camion pour ${l.identifiant}`);
+}
 await prisma.$disconnect();

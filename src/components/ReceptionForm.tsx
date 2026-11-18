@@ -1,6 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+import Alert from "@/components/ui/Alert";
+import Button from "@/components/ui/Button";
+import { inputCls } from "@/components/ui/styles";
 
 type Produit = { id: number; label: string; piecesParCarton: number };
 type Ligne = { produitId: string; cartons: string; pieces: string };
@@ -44,14 +48,14 @@ export default function ReceptionForm({ produits }: { produits: Produit[] }) {
     router.refresh();
   }
 
-  const cls = "rounded border p-2";
   return (
-    <form onSubmit={onSubmit} className="max-w-3xl space-y-3">
+    <form onSubmit={onSubmit} className="space-y-4">
+      {error && <Alert title="Réception impossible">{error}</Alert>}
       <input
         value={reference}
         onChange={(e) => setReference(e.target.value)}
         placeholder="N° du bon fournisseur (facultatif)"
-        className={`${cls} w-full`}
+        className={`${inputCls} sm:max-w-md`}
       />
       {lignes.map((l, i) => (
         <div key={i} className="flex flex-wrap items-center gap-2">
@@ -59,7 +63,7 @@ export default function ReceptionForm({ produits }: { produits: Produit[] }) {
             value={l.produitId}
             onChange={(e) => maj(i, "produitId", e.target.value)}
             required
-            className={cls}
+            className={`${inputCls} sm:w-72`}
           >
             <option value="" disabled>
               Produit
@@ -76,7 +80,7 @@ export default function ReceptionForm({ produits }: { produits: Produit[] }) {
             value={l.cartons}
             onChange={(e) => maj(i, "cartons", e.target.value)}
             placeholder="Cartons"
-            className={`${cls} w-28`}
+            className={`${inputCls} sm:w-28`}
           />
           <input
             type="number"
@@ -84,34 +88,28 @@ export default function ReceptionForm({ produits }: { produits: Produit[] }) {
             value={l.pieces}
             onChange={(e) => maj(i, "pieces", e.target.value)}
             placeholder="Pièces"
-            className={`${cls} w-28`}
+            className={`${inputCls} sm:w-28`}
           />
-          <span className="text-sm text-gray-600">= {total(l)} pièces</span>
+          <span className="text-sm text-slate-500">= {total(l)} pièces</span>
           {lignes.length > 1 && (
             <button
               type="button"
               onClick={() => setLignes((ls) => ls.filter((_, idx) => idx !== i))}
-              className="text-sm text-red-600 underline"
+              className="text-sm font-medium text-red-600 hover:underline"
             >
               Retirer
             </button>
           )}
         </div>
       ))}
-      <button
-        type="button"
-        onClick={() => setLignes((ls) => [...ls, { ...vide }])}
-        className="text-sm text-blue-700 underline"
-      >
-        + Ajouter un produit
-      </button>
-      {error && <p className="text-red-600">{error}</p>}
-      <button
-        disabled={loading}
-        className="block rounded bg-blue-700 px-4 py-2 text-white disabled:opacity-50"
-      >
-        {loading ? "Patientez..." : "Enregistrer la réception"}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="secondary" onClick={() => setLignes((ls) => [...ls, { ...vide }])}>
+          <Plus size={16} /> Ajouter un produit
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? "Patientez..." : "Enregistrer la réception"}
+        </Button>
+      </div>
     </form>
   );
 }

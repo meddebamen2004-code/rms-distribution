@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { addDays, isValidISODate, labelJour, mondayOf, today } from "@/lib/dates";
+import PageHeader from "@/components/ui/PageHeader";
+import Card from "@/components/ui/Card";
+import Alert from "@/components/ui/Alert";
+import { thCls } from "@/components/ui/styles";
 import PlanningCell from "@/components/PlanningCell";
+
+const navBtn =
+  "inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50";
 
 export default async function PlanningPage({
   searchParams,
@@ -24,50 +32,51 @@ export default async function PlanningPage({
     prisma.affectation.findMany({ where: { jour: { in: jours } } }),
   ]);
   const options = secteurs.map((s) => ({ id: s.id, label: `${s.nom} (${s.ville})` }));
-  const parLivreurJour = new Map(
-    affectations.map((a) => [`${a.livreurId}|${a.jour}`, a.secteurId])
-  );
+  const parLivreurJour = new Map(affectations.map((a) => [`${a.livreurId}|${a.jour}`, a.secteurId]));
 
   return (
-    <main className="mx-auto max-w-6xl space-y-6 px-4 py-10">
-      <Link href="/gerant" className="text-blue-700 underline">
-        ← Espace gérant
-      </Link>
-      <h1 className="text-2xl font-bold">Planning des livreurs</h1>
+    <>
+      <PageHeader
+        eyebrow="Organisation"
+        title="Planning des livreurs"
+        subtitle="Affectez chaque livreur à un secteur pour chaque jour."
+      />
 
-      <div className="flex items-center gap-4">
-        <Link href={`/gerant/planning?debut=${addDays(lundi, -7)}`} className="text-blue-700 underline">
-          ← Semaine précédente
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <Link href={`/gerant/planning?debut=${addDays(lundi, -7)}`} className={navBtn}>
+          <ChevronLeft size={16} /> Semaine précédente
         </Link>
-        <span className="font-semibold">Semaine du {labelJour(lundi)}</span>
-        <Link href={`/gerant/planning?debut=${addDays(lundi, 7)}`} className="text-blue-700 underline">
-          Semaine suivante →
+        <span className="text-sm font-semibold text-slate-900">Semaine du {labelJour(lundi)}</span>
+        <Link href={`/gerant/planning?debut=${addDays(lundi, 7)}`} className={navBtn}>
+          Semaine suivante <ChevronRight size={16} />
         </Link>
       </div>
 
       {options.length === 0 ? (
-        <p className="text-orange-600">Créez d'abord des secteurs (page Clients et secteurs).</p>
+        <Alert tone="yellow" title="Aucun secteur">
+          Créez d’abord des secteurs dans la page Clients.
+        </Alert>
       ) : livreurs.length === 0 ? (
-        <p className="text-orange-600">Aucun livreur actif.</p>
+        <Alert tone="yellow" title="Aucun livreur actif" />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2">Livreur</th>
+        <Card className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className={thCls}>Livreur</th>
                 {jours.map((j) => (
-                  <th key={j} className={j === today() ? "p-2 text-blue-700" : "p-2"}>
+                  <th key={j} className={`${thCls} ${j === today() ? "!text-blue-600" : ""}`}>
                     {labelJour(j)}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {livreurs.map((l) => (
-                <tr key={l.id} className="border-b">
-                  <td className="p-2 font-medium">{l.nom}</td>
+                <tr key={l.id}>
+                  <td className="px-4 py-3 text-sm font-semibold text-slate-900">{l.nom}</td>
                   {jours.map((j) => (
-                    <td key={j} className="p-1">
+                    <td key={j} className="min-w-40 p-2">
                       <PlanningCell
                         livreurId={l.id}
                         jour={j}
@@ -80,8 +89,8 @@ export default async function PlanningPage({
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
-    </main>
+    </>
   );
 }

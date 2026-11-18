@@ -1,6 +1,8 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import PageHeader from "@/components/ui/PageHeader";
+import Card from "@/components/ui/Card";
+import { tdCls, thCls } from "@/components/ui/styles";
 import AjustementForm from "@/components/AjustementForm";
 import StatutAjustement from "@/components/StatutAjustement";
 
@@ -21,58 +23,65 @@ export default async function MagasinierAjustementsPage() {
   });
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-      <Link href="/magasinier" className="text-blue-700 underline">
-        ← Espace magasinier
-      </Link>
-      <h1 className="text-2xl font-bold">Ajustements de stock</h1>
+    <>
+      <PageHeader
+        eyebrow="Dépôt"
+        title="Ajustements de stock"
+        subtitle="Proposez une correction : le gérant la valide ou la refuse."
+      />
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">Nouvelle demande de correction</h2>
+      <Card className="mb-6 p-6">
+        <h2 className="mb-4 text-base font-semibold text-slate-900">Nouvelle demande de correction</h2>
         <AjustementForm produits={options} />
-      </section>
+      </Card>
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">Mes demandes</h2>
+      <Card className="overflow-hidden">
+        <div className="border-b border-slate-200 px-6 py-4">
+          <h2 className="text-base font-semibold text-slate-900">Mes demandes</h2>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2">Date</th>
-                <th className="p-2">Produit</th>
-                <th className="p-2">Variation</th>
-                <th className="p-2">Motif</th>
-                <th className="p-2">Statut</th>
-                <th className="p-2">Commentaire du gérant</th>
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className={thCls}>Date</th>
+                <th className={thCls}>Produit</th>
+                <th className={thCls}>Variation</th>
+                <th className={thCls}>Motif</th>
+                <th className={thCls}>Statut</th>
+                <th className={thCls}>Commentaire du gérant</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {demandes.map((d) => (
-                <tr key={d.id} className="border-b">
-                  <td className="p-2">{d.creeLe.toLocaleString("fr-FR")}</td>
-                  <td className="p-2">{d.produit.nom}</td>
-                  <td className={d.variationPieces >= 0 ? "p-2 text-green-700" : "p-2 text-red-600"}>
+                <tr key={d.id}>
+                  <td className={tdCls}>{d.creeLe.toLocaleString("fr-FR")}</td>
+                  <td className={`${tdCls} font-semibold text-slate-900`}>{d.produit.nom}</td>
+                  <td
+                    className={`${tdCls} font-semibold ${
+                      d.variationPieces >= 0 ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
                     {d.variationPieces > 0 ? "+" : ""}
                     {d.variationPieces}
                   </td>
-                  <td className="p-2">{d.motif}</td>
-                  <td className="p-2">
+                  <td className={tdCls}>{d.motif}</td>
+                  <td className={tdCls}>
                     <StatutAjustement statut={d.statut} />
                   </td>
-                  <td className="p-2">{d.commentaireGerant ?? "-"}</td>
+                  <td className={tdCls}>{d.commentaireGerant ?? "-"}</td>
                 </tr>
               ))}
               {demandes.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-2 text-gray-500">
-                    Aucune demande pour l'instant.
+                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
+                    Aucune demande pour l’instant.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </section>
-    </main>
+      </Card>
+    </>
   );
 }

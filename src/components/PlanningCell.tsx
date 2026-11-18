@@ -42,11 +42,11 @@ export default function PlanningCell({
         value={secteurId ?? ""}
         onChange={onChange}
         disabled={loading}
-        className={
+        className={`w-full rounded-lg border bg-white px-2 py-1.5 text-sm disabled:opacity-50 ${
           secteurId
-            ? "w-full rounded border p-1 text-sm"
-            : "w-full rounded border border-orange-400 p-1 text-sm text-orange-600"
-        }
+            ? "border-slate-200 text-slate-800"
+            : "border-amber-300 bg-amber-50 text-amber-700"
+        }`}
       >
         <option value="" disabled>
           Non affecté
@@ -57,7 +57,7 @@ export default function PlanningCell({
           </option>
         ))}
       </select>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 }

@@ -1,70 +1,55 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import PageHeader from "@/components/ui/PageHeader";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
 import SecteurForm from "@/components/SecteurForm";
-import ClientForm from "@/components/ClientForm";
+import ClientModal from "@/components/ClientModal";
+import ClientsTable, { type ClientRow } from "@/components/ClientsTable";
 
 export default async function ClientsPage() {
   await requireRole("GERANT");
 
-  const secteurs = await prisma.secteur.findMany({
-    orderBy: [{ ville: "asc" }, { nom: "asc" }],
-  });
-  const clients = await prisma.client.findMany({
-    include: { secteur: true },
-    orderBy: { nomCommerce: "asc" },
-  });
+  const [secteurs, clients] = await Promise.all([
+    prisma.secteur.findMany({ orderBy: [{ ville: "asc" }, { nom: "asc" }] }),
+    prisma.client.findMany({ include: { secteur: true }, orderBy: { nomCommerce: "asc" } }),
+  ]);
+
   const options = secteurs.map((s) => ({ id: s.id, label: `${s.nom} (${s.ville})` }));
+  const rows: ClientRow[] = clients.map((c) => ({
+    id: c.id,
+    nomCommerce: c.nomCommerce,
+    responsable: c.responsable,
+    telephone: c.telephone,
+    adresse: c.adresse,
+    zone: `${c.secteur.nom} (${c.secteur.ville})`,
+  }));
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-      <Link href="/gerant" className="text-blue-700 underline">
-        ← Espace gérant
-      </Link>
-      <h1 className="text-2xl font-bold">Clients et secteurs</h1>
+    <>
+      <PageHeader
+        eyebrow="Portefeuille"
+        title="Clients"
+        subtitle="Retrouvez vos commerces et leur secteur de livraison."
+        action={<ClientModal secteurs={options} />}
+      />
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">Secteurs</h2>
-        <p className="text-gray-600">
-          {options.map((s) => s.label).join(" · ") || "Aucun secteur"}
-        </p>
-        <SecteurForm />
-      </section>
+      <ClientsTable rows={rows} zones={options.map((o) => o.label)} />
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">Nouveau client</h2>
-        <ClientForm secteurs={options} />
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="font-semibold">Clients ({clients.length})</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2">Commerce</th>
-                <th className="p-2">Responsable</th>
-                <th className="p-2">Téléphone</th>
-                <th className="p-2">Adresse</th>
-                <th className="p-2">Secteur</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clients.map((c) => (
-                <tr key={c.id} className="border-b">
-                  <td className="p-2">{c.nomCommerce}</td>
-                  <td className="p-2">{c.responsable}</td>
-                  <td className="p-2">{c.telephone}</td>
-                  <td className="p-2">{c.adresse}</td>
-                  <td className="p-2">
-                    {c.secteur.nom} ({c.secteur.ville})
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <Card className="mt-6 p-6">
+        <h2 className="text-base font-semibold text-slate-900">Secteurs</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {options.map((o) => (
+            <Badge key={o.id} tone="blue">
+              {o.label}
+            </Badge>
+          ))}
+          {options.length === 0 && <p className="text-sm text-slate-500">Aucun secteur.</p>}
         </div>
-      </section>
-    </main>
+        <div className="mt-4">
+          <SecteurForm />
+        </div>
+      </Card>
+    </>
   );
 }

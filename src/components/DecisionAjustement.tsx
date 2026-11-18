@@ -20,26 +20,24 @@ export default function DecisionAjustement({ id }: { id: number }) {
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));
       setError(json.error ?? `Erreur ${res.status}`);
-      router.refresh();
-      return;
     }
     router.refresh();
   }
 
   return (
-    <div className="space-y-1">
+    <div className="min-w-56 space-y-2">
       <input
         value={commentaire}
         onChange={(e) => setCommentaire(e.target.value)}
         placeholder="Commentaire (obligatoire pour refuser)"
-        className="w-full rounded border p-1 text-sm"
+        className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
       />
       <div className="flex gap-2">
         <button
           type="button"
           disabled={loading}
           onClick={() => decider("VALIDER")}
-          className="rounded bg-green-700 px-3 py-1 text-sm text-white disabled:opacity-50"
+          className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
         >
           Valider
         </button>
@@ -47,12 +45,12 @@ export default function DecisionAjustement({ id }: { id: number }) {
           type="button"
           disabled={loading}
           onClick={() => decider("REFUSER")}
-          className="rounded bg-red-700 px-3 py-1 text-sm text-white disabled:opacity-50"
+          className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
         >
           Refuser
         </button>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
 }

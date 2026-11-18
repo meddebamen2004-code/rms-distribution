@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Button from "@/components/ui/Button";
+import { inputCls } from "@/components/ui/styles";
 
 export default function SecteurForm() {
   const router = useRouter();
@@ -27,10 +29,12 @@ export default function SecteurForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-2">
-      <input name="nom" placeholder="Secteur (cité, quartier)" required className="rounded border p-2" />
-      <input name="ville" placeholder="Ville" required className="rounded border p-2" />
-      <button className="rounded bg-gray-800 px-3 py-2 text-white">Ajouter</button>
-      {error && <p className="text-red-600">{error}</p>}
+      <input name="nom" placeholder="Secteur (cité, quartier)" required className={`${inputCls} sm:w-64`} />
+      <input name="ville" placeholder="Ville" required className={`${inputCls} sm:w-48`} />
+      <Button type="submit" variant="secondary">
+        Ajouter
+      </Button>
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </form>
   );
 }

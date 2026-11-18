@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import PageHeader from "@/components/ui/PageHeader";
+import Card from "@/components/ui/Card";
 import StockView from "@/components/StockView";
 import ReceptionForm from "@/components/ReceptionForm";
 
@@ -18,18 +19,19 @@ export default async function MagasinierStockPage() {
   }));
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-      <Link href="/magasinier" className="text-blue-700 underline">
-        ← Espace magasinier
-      </Link>
-      <h1 className="text-2xl font-bold">Stock du dépôt</h1>
+    <>
+      <PageHeader
+        eyebrow="Dépôt"
+        title="Stock et réceptions"
+        subtitle="Enregistrez les entrées de marchandise et consultez le stock."
+      />
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">Nouvelle réception fournisseur</h2>
+      <Card className="mb-6 p-6">
+        <h2 className="mb-4 text-base font-semibold text-slate-900">Nouvelle réception fournisseur</h2>
         <ReceptionForm produits={options} />
-      </section>
+      </Card>
 
       <StockView />
-    </main>
+    </>
   );
-}
+} 

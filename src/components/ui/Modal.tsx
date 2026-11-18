@@ -7,12 +7,14 @@ export default function Modal({
   onClose,
   title,
   subtitle,
+  size = "md",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   subtitle?: string;
+  size?: "sm" | "md";
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -35,7 +37,9 @@ export default function Modal({
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className="my-8 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl"
+        className={`my-8 w-full rounded-2xl bg-white p-6 shadow-xl ${
+          size === "sm" ? "max-w-md" : "max-w-2xl"
+        }`}
       >
         <div className="flex items-start justify-between border-b border-slate-200 pb-4">
           <div>

@@ -1,10 +1,21 @@
 "use client";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Alert from "@/components/ui/Alert";
+import Button from "@/components/ui/Button";
+import { inputCls, labelCls } from "@/components/ui/styles";
 
 type Secteur = { id: number; label: string };
 
-export default function ClientForm({ secteurs }: { secteurs: Secteur[] }) {
+export default function ClientForm({
+  secteurs,
+  onSuccess,
+  onCancel,
+}: {
+  secteurs: Secteur[];
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState("");
@@ -32,13 +43,17 @@ export default function ClientForm({ secteurs }: { secteurs: Secteur[] }) {
     }
     form.reset();
     router.refresh();
+    onSuccess?.();
   }
 
   if (secteurs.length === 0) {
-    return <p className="text-orange-600">Créez d'abord un secteur.</p>;
+    return (
+      <Alert tone="yellow" title="Aucun secteur">
+        Créez d’abord un secteur dans la section « Secteurs » de la page.
+      </Alert>
+    );
   }
 
-  const cls = "rounded border p-2";
   return (
     <form
       ref={formRef}
@@ -46,42 +61,60 @@ export default function ClientForm({ secteurs }: { secteurs: Secteur[] }) {
         e.preventDefault();
         envoyer(false);
       }}
-      className="grid max-w-2xl gap-3 sm:grid-cols-2"
+      className="space-y-5"
     >
-      <input name="nomCommerce" placeholder="Nom du commerce" required className={cls} />
-      <input name="responsable" placeholder="Responsable" required className={cls} />
-      <input name="telephone" placeholder="Téléphone" required className={cls} />
-      <input name="adresse" placeholder="Adresse" required className={cls} />
-      <select name="secteurId" required defaultValue="" className={`${cls} sm:col-span-2`}>
-        <option value="" disabled>
-          Secteur
-        </option>
-        {secteurs.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.label}
-          </option>
+      {error &&
+        (doublon ? (
+          <Alert tone="yellow" title="Numéro déjà utilisé">
+            {error}
+          </Alert>
+        ) : (
+          <Alert title="Enregistrement impossible">{error}</Alert>
         ))}
-      </select>
-      {error && (
-        <div className="sm:col-span-2">
-          <p className={doublon ? "text-orange-600" : "text-red-600"}>{error}</p>
-          {doublon && (
-            <button
-              type="button"
-              onClick={() => envoyer(true)}
-              className="mt-1 text-sm text-blue-700 underline"
-            >
-              Enregistrer quand même
-            </button>
-          )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className={labelCls}>Nom du commerce *</label>
+          <input name="nomCommerce" required className={inputCls} />
         </div>
-      )}
-      <button
-        disabled={loading}
-        className="rounded bg-blue-700 p-2 text-white disabled:opacity-50 sm:col-span-2"
-      >
-        {loading ? "Patientez..." : "Ajouter le client"}
-      </button>
+        <div>
+          <label className={labelCls}>Responsable *</label>
+          <input name="responsable" required className={inputCls} />
+        </div>
+        <div>
+          <label className={labelCls}>Téléphone *</label>
+          <input name="telephone" required className={inputCls} />
+        </div>
+        <div>
+          <label className={labelCls}>Adresse *</label>
+          <input name="adresse" required className={inputCls} />
+        </div>
+        <div className="sm:col-span-2">
+          <label className={labelCls}>Secteur de livraison *</label>
+          <select name="secteurId" required defaultValue="" className={inputCls}>
+            <option value="" disabled>
+              Sélectionner un secteur
+            </option>
+            {secteurs.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+        <Button variant="secondary" onClick={onCancel}>
+          Annuler
+        </Button>
+        {doublon && (
+          <Button variant="secondary" disabled={loading} onClick={() => envoyer(true)}>
+            Enregistrer quand même
+          </Button>
+        )}
+        <Button type="submit" disabled={loading}>
+          {loading ? "Patientez..." : "Enregistrer le client"}
+        </Button>
+      </div>
     </form>
   );
 }

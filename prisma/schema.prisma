@@ -23,6 +23,11 @@ model Utilisateur {
   mouvements         MouvementStock[]
   ajustementsDemandes AjustementStock[] @relation("AjustDemandeur")
   ajustementsDecides  AjustementStock[] @relation("AjustDecideur")
+  camion              Camion?
+  bonsDemandes        BonChargement[] @relation("BonLivreur")
+  bonsControles       BonChargement[] @relation("BonMagasinier")
+  bonsValides         BonChargement[] @relation("BonGerant")
+  tournees            Tournee[]
 }
 model Categorie {
   id       Int       @id @default(autoincrement())
@@ -43,6 +48,7 @@ model Produit {
   categorie       Categorie @relation(fields: [categorieId], references: [id])
   mouvements      MouvementStock[]
   ajustements     AjustementStock[]
+  lignesChargement LigneChargement[]
 }
 model Secteur {
   id           Int           @id @default(autoincrement())
@@ -50,6 +56,7 @@ model Secteur {
   ville        String
   clients      Client[]
   affectations Affectation[]
+  tournees     Tournee[]
 
   @@unique([nom, ville])
 }
@@ -92,7 +99,10 @@ model MouvementStock {
   auteurId        Int
   auteur          Utilisateur @relation(fields: [auteurId], references: [id])
   ajustement      AjustementStock?
-
+  camionId        Int?            // vide = dépôt, sinon stock du camion
+  camion          Camion?         @relation(fields: [camionId], references: [id])
+  bonId           Int?
+  bon             BonChargement?  @relation(fields: [bonId], references: [id])
   @@index([produitId])
 }
 
@@ -116,4 +126,73 @@ model AjustementStock {
   mouvement         MouvementStock? @relation(fields: [mouvementId], references: [id])
 
   @@index([statut])
+}
+
+// Chaque livreur a son camion : un dépôt mobile avec son propre stock.
+model Camion {
+  id              Int          @id @default(autoincrement())
+  immatriculation String       @unique
+  livreurId       Int?         @unique
+  livreur         Utilisateur? @relation(fields: [livreurId], references: [id])
+  tournees        Tournee[]
+  mouvements      MouvementStock[]
+}
+
+// Demande de recharge = bon de chargement du jour. Un bon par livreur et par jour.
+// statut : BROUILLON, ENVOYE, CONTROLE, VALIDE, CHARGE, REFUSE
+model BonChargement {
+  id            Int          @id @default(autoincrement())
+  jour          String       // jour de la tournée, "AAAA-MM-JJ"
+  statut        String       @default("BROUILLON")
+  commentaire   String?
+  creeLe        DateTime     @default(now())
+  envoyeLe      DateTime?
+  controleLe    DateTime?
+  valideLe      DateTime?
+  chargeLe      DateTime?
+  livreurId     Int
+  livreur       Utilisateur  @relation("BonLivreur", fields: [livreurId], references: [id])
+  controleParId Int?
+  controlePar   Utilisateur? @relation("BonMagasinier", fields: [controleParId], references: [id])
+  valideParId   Int?
+  validePar     Utilisateur? @relation("BonGerant", fields: [valideParId], references: [id])
+
+  lignes     LigneChargement[]
+  mouvements MouvementStock[]
+  tournee    Tournee?
+
+  @@unique([livreurId, jour])
+  @@index([statut])
+}
+
+// decision : EN_ATTENTE, ACCEPTEE, REJETEE. Quantités en pièces.
+model LigneChargement {
+  id               Int           @id @default(autoincrement())
+  quantiteDemandee Int
+  quantiteAccordee Int?
+  decision         String        @default("EN_ATTENTE")
+  motif            String?
+  bonId            Int
+  bon              BonChargement @relation(fields: [bonId], references: [id])
+  produitId        Int
+  produit          Produit       @relation(fields: [produitId], references: [id])
+
+  @@unique([bonId, produitId])
+}
+
+// Créée quand le bon est chargé : le livreur peut alors commencer ses livraisons.
+model Tournee {
+  id        Int           @id @default(autoincrement())
+  jour      String
+  statut    String        @default("EN_COURS")
+  livreurId Int
+  livreur   Utilisateur   @relation(fields: [livreurId], references: [id])
+  camionId  Int
+  camion    Camion        @relation(fields: [camionId], references: [id])
+  secteurId Int
+  secteur   Secteur       @relation(fields: [secteurId], references: [id])
+  bonId     Int           @unique
+  bon       BonChargement @relation(fields: [bonId], references: [id])
+
+  @@unique([livreurId, jour])
 }

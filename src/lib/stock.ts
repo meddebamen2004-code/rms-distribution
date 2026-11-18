@@ -11,6 +11,7 @@ export function cartonsEtPieces(total: number, parCarton: number) {
 export async function stockParProduit(): Promise<Map<number, number>> {
   const lignes = await prisma.mouvementStock.groupBy({
     by: ["produitId"],
+    where: { camionId: null }, // dépôt uniquement
     _sum: { variationPieces: true },
   });
   return new Map(lignes.map((l) => [l.produitId, l._sum.variationPieces ?? 0]));
@@ -22,7 +23,7 @@ export async function stockProduit(
   db: Prisma.TransactionClient = prisma
 ): Promise<number> {
   const r = await db.mouvementStock.aggregate({
-    where: { produitId },
+    where: { produitId, camionId: null }, // dépôt uniquement
     _sum: { variationPieces: true },
   });
   return r._sum.variationPieces ?? 0;

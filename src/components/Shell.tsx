@@ -13,6 +13,8 @@ import {
   Warehouse,
 } from "lucide-react";
 import type { NavItem } from "@/lib/nav";
+import Button from "@/components/ui/Button";
+import Modal from "@/components/ui/Modal";
 
 const ICONS = {
   dashboard: LayoutDashboard,
@@ -39,12 +41,15 @@ export default function Shell({
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const home = nav[0].href;
 
   const isActive = (href: string) =>
     href === home ? pathname === href : pathname === href || pathname.startsWith(href + "/");
 
   async function logout() {
+    setLoggingOut(true);
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
     router.refresh();
@@ -110,7 +115,10 @@ export default function Shell({
         </div>
         <button
           type="button"
-          onClick={logout}
+          onClick={() => {
+            setOpen(false);
+            setConfirmOpen(true);
+          }}
           aria-label="Se déconnecter"
           title="Se déconnecter"
           className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
@@ -151,6 +159,23 @@ export default function Shell({
           <div className="mx-auto max-w-6xl">{children}</div>
         </main>
       </div>
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Se déconnecter ?"
+        subtitle="Vous devrez saisir à nouveau votre identifiant et votre mot de passe."
+        size="sm"
+      >
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
+            Annuler
+          </Button>
+          <Button variant="danger" onClick={logout} disabled={loggingOut}>
+            {loggingOut ? "Déconnexion..." : "Se déconnecter"}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

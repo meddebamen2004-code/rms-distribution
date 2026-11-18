@@ -1,10 +1,12 @@
-const STYLES: Record<string, { label: string; cls: string }> = {
-  EN_ATTENTE: { label: "En attente", cls: "bg-orange-100 text-orange-700" },
-  VALIDE: { label: "Validé", cls: "bg-green-100 text-green-700" },
-  REFUSE: { label: "Refusé", cls: "bg-red-100 text-red-700" },
-};
+import Badge from "@/components/ui/Badge";
+
+const STATUTS = {
+  EN_ATTENTE: { label: "En attente", tone: "orange" },
+  VALIDE: { label: "Validé", tone: "green" },
+  REFUSE: { label: "Refusé", tone: "red" },
+} as const;
 
 export default function StatutAjustement({ statut }: { statut: string }) {
-  const s = STYLES[statut] ?? { label: statut, cls: "bg-gray-100 text-gray-700" };
-  return <span className={`rounded px-2 py-1 text-xs ${s.cls}`}>{s.label}</span>;
+  const s = STATUTS[statut as keyof typeof STATUTS];
+  return <Badge tone={s?.tone ?? "gray"}>{s?.label ?? statut}</Badge>;
 }

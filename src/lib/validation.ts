@@ -91,3 +91,30 @@ export const decisionAjustementSchema = z
     (d) => d.decision === "VALIDER" || (d.commentaire && d.commentaire.length >= 3),
     { message: "Un commentaire est obligatoire pour refuser", path: ["commentaire"] }
   );
+
+  const ligneBonSchema = z.object({
+  produitId: z.coerce.number().int().positive("Produit requis"),
+  cartons: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+  pieces: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+});
+
+export const bonSchema = z.object({
+  jour: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide"),
+  lignes: z.array(ligneBonSchema).min(1, "Ajoutez au moins une ligne"),
+  envoyer: z.boolean().optional(),
+});
+
+export const bonUpdateSchema = bonSchema.omit({ jour: true });
+
+export const bonActionSchema = z.object({
+  action: z.enum(["ENVOYER", "SOUMETTRE", "REFUSER", "VALIDER", "RENVOYER", "CHARGER"], {
+    message: "Action invalide",
+  }),
+  commentaire: z.string().trim().optional(),
+});
+
+export const ligneDecisionSchema = z.object({
+  decision: z.enum(["ACCEPTEE", "REJETEE"], { message: "Décision invalide" }),
+  quantiteAccordee: z.coerce.number().int("Nombre entier requis").min(0).optional(),
+  motif: z.string().trim().optional(),
+});

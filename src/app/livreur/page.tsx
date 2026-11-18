@@ -1,38 +1,56 @@
+import { MapPin } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { clientsDuJour } from "@/lib/secteur";
-import LogoutButton from "@/components/LogoutButton";
+import PageHeader from "@/components/ui/PageHeader";
+import Card from "@/components/ui/Card";
+import Alert from "@/components/ui/Alert";
 
 export default async function LivreurPage() {
   const user = await requireRole("LIVREUR");
   const { secteur, clients } = await clientsDuJour(user.id);
 
+  const date = new Date().toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 pt-16">
-      <h1 className="text-2xl font-bold">Espace livreur</h1>
-      <p>Bonjour {user.nom}</p>
+    <div className="mx-auto max-w-lg">
+      <PageHeader eyebrow={date} title={`Bonjour ${user.nom.split(" ")[0]},`} />
 
       {secteur ? (
-        <section className="space-y-2">
-          <p className="rounded bg-blue-50 p-3 text-blue-900">
-            Secteur du jour : <strong>{secteur.nom}</strong> ({secteur.ville})
-          </p>
-          <h2 className="font-semibold">Mes clients ({clients.length})</h2>
-          <ul className="space-y-2">
+        <>
+          <Card className="mb-6 border-blue-200 bg-blue-50 p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+              Secteur du jour
+            </p>
+            <p className="mt-1 text-xl font-bold text-slate-900">{secteur.nom}</p>
+            <p className="text-sm text-slate-600">{secteur.ville}</p>
+          </Card>
+
+          <h2 className="mb-3 text-base font-semibold text-slate-900">Mes clients ({clients.length})</h2>
+          <ul className="space-y-3">
             {clients.map((c) => (
-              <li key={c.id} className="rounded border p-3">
-                <p className="font-medium">{c.nomCommerce}</p>
-                <p className="text-sm text-gray-600">{c.adresse}</p>
+              <li key={c.id}>
+                <Card className="p-4">
+                  <p className="text-base font-semibold text-slate-900">{c.nomCommerce}</p>
+                  <p className="mt-1 flex items-center gap-1 text-sm text-slate-500">
+                    <MapPin size={14} /> {c.adresse}
+                  </p>
+                </Card>
               </li>
             ))}
+            {clients.length === 0 && (
+              <li className="text-sm text-slate-500">Aucun client dans ce secteur.</li>
+            )}
           </ul>
-        </section>
+        </>
       ) : (
-        <p className="rounded bg-orange-50 p-3 text-orange-700">
-          Aucun secteur affecté aujourd'hui. Contactez le gérant.
-        </p>
+        <Alert tone="yellow" title="Aucun secteur affecté aujourd’hui">
+          Contactez le gérant pour connaître votre secteur.
+        </Alert>
       )}
-
-      <LogoutButton />
-    </main>
+    </div>
   );
 }
