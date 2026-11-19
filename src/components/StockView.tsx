@@ -11,13 +11,11 @@ const TYPES: Record<string, { label: string; tone: "green" | "blue" | "orange" |
 };
 
 export default async function StockView() {
-  const [produits, stock, mouvements] = await Promise.all([
-    prisma.produit.findMany(
-      { orderBy: { nom: "asc" } 
-      where: { camionId: null },}
-    ),
+    const [produits, stock, mouvements] = await Promise.all([
+    prisma.produit.findMany({ orderBy: { nom: "asc" } }),
     stockParProduit(),
     prisma.mouvementStock.findMany({
+      where: { camionId: null },
       take: 50,
       orderBy: { creeLe: "desc" },
       include: { produit: true, auteur: true },

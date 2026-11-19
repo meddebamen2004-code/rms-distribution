@@ -1,4 +1,5 @@
-import { MapPin } from "lucide-react";
+import Link from "next/link";
+import { MapPin, Truck } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { clientsDuJour } from "@/lib/secteur";
 import PageHeader from "@/components/ui/PageHeader";
@@ -19,12 +20,21 @@ export default async function LivreurPage() {
     <div className="mx-auto max-w-lg">
       <PageHeader eyebrow={date} title={`Bonjour ${user.nom.split(" ")[0]},`} />
 
+      <Link
+        href="/livreur/recharge"
+        className="mb-6 flex items-center gap-3 rounded-2xl bg-blue-600 p-5 text-white shadow-sm transition hover:bg-blue-700"
+      >
+        <Truck size={24} />
+        <span className="flex-1">
+          <span className="block text-base font-semibold">Préparer ma demande de recharge</span>
+          <span className="block text-sm text-blue-100">Pour la tournée de demain</span>
+        </span>
+      </Link>
+
       {secteur ? (
         <>
           <Card className="mb-6 border-blue-200 bg-blue-50 p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-              Secteur du jour
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">Secteur du jour</p>
             <p className="mt-1 text-xl font-bold text-slate-900">{secteur.nom}</p>
             <p className="text-sm text-slate-600">{secteur.ville}</p>
           </Card>
@@ -41,9 +51,7 @@ export default async function LivreurPage() {
                 </Card>
               </li>
             ))}
-            {clients.length === 0 && (
-              <li className="text-sm text-slate-500">Aucun client dans ce secteur.</li>
-            )}
+            {clients.length === 0 && <li className="text-sm text-slate-500">Aucun client dans ce secteur.</li>}
           </ul>
         </>
       ) : (

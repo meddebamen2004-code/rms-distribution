@@ -49,6 +49,7 @@ model Produit {
   mouvements      MouvementStock[]
   ajustements     AjustementStock[]
   lignesChargement LigneChargement[]
+  lignesLivraison LigneLivraison[]
 }
 model Secteur {
   id           Int           @id @default(autoincrement())
@@ -69,8 +70,9 @@ model Client {
   adresse     String
   secteurId   Int
   secteur     Secteur @relation(fields: [secteurId], references: [id])
-
+  livraisons Livraison[]
   @@index([secteurId])
+
 }
 
 // Un livreur a un seul secteur par jour. jour = "AAAA-MM-JJ".
@@ -102,6 +104,8 @@ model MouvementStock {
   camionId        Int?            // vide = dépôt, sinon stock du camion
   camion          Camion?         @relation(fields: [camionId], references: [id])
   bonId           Int?
+  livraisonId     Int?
+  livraison       Livraison?      @relation(fields: [livraisonId], references: [id])
   bon             BonChargement?  @relation(fields: [bonId], references: [id])
   @@index([produitId])
 }
@@ -193,6 +197,38 @@ model Tournee {
   secteur   Secteur       @relation(fields: [secteurId], references: [id])
   bonId     Int           @unique
   bon       BonChargement @relation(fields: [bonId], references: [id])
-
+  livraisons Livraison[]
   @@unique([livreurId, jour])
+}
+// Une livraison chez un client pendant la tournée. On ne la supprime jamais :
+// l'annulation la marque (annulee) et crée des mouvements inverses.
+model Livraison {
+  id         Int       @id @default(autoincrement())
+  dateHeure  DateTime  @default(now())
+  annulee    Boolean   @default(false)
+  annuleeLe  DateTime?
+  tourneeId  Int
+  tournee    Tournee   @relation(fields: [tourneeId], references: [id])
+  clientId   Int
+  client     Client    @relation(fields: [clientId], references: [id])
+
+  lignes     LigneLivraison[]
+  mouvements MouvementStock[]
+
+  @@index([tourneeId])
+  @@index([clientId])
+}
+
+// Quantités en pièces. motifRetour : ABIME, REFUSE, PERIME
+model LigneLivraison {
+  id             Int       @id @default(autoincrement())
+  quantiteLivree Int       @default(0)
+  quantiteRetour Int       @default(0)
+  motifRetour    String?
+  livraisonId    Int
+  livraison      Livraison @relation(fields: [livraisonId], references: [id])
+  produitId      Int
+  produit        Produit   @relation(fields: [produitId], references: [id])
+
+  @@unique([livraisonId, produitId])
 }

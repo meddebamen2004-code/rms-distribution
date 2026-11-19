@@ -28,3 +28,29 @@ export async function stockProduit(
   });
   return r._sum.variationPieces ?? 0;
 }
+
+// Stock d'un produit dans un camion (somme des mouvements du camion)
+export async function stockCamion(
+  camionId: number,
+  produitId: number,
+  db: Prisma.TransactionClient = prisma
+): Promise<number> {
+  const r = await db.mouvementStock.aggregate({
+    where: { camionId, produitId },
+    _sum: { variationPieces: true },
+  });
+  return r._sum.variationPieces ?? 0;
+}
+
+// Stock de tout le camion, produit par produit
+export async function stockCamionParProduit(
+  camionId: number,
+  db: Prisma.TransactionClient = prisma
+): Promise<Map<number, number>> {
+  const lignes = await db.mouvementStock.groupBy({
+    by: ["produitId"],
+    where: { camionId },
+    _sum: { variationPieces: true },
+  });
+  return new Map(lignes.map((l) => [l.produitId, l._sum.variationPieces ?? 0]));
+}

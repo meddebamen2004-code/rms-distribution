@@ -118,3 +118,21 @@ export const ligneDecisionSchema = z.object({
   quantiteAccordee: z.coerce.number().int("Nombre entier requis").min(0).optional(),
   motif: z.string().trim().optional(),
 });
+
+export const livraisonSchema = z.object({
+  clientId: z.coerce.number().int().positive("Client requis"),
+  lignes: z
+    .array(
+      z.object({
+        produitId: z.coerce.number().int().positive("Produit requis"),
+        quantiteLivree: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+        quantiteRetour: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+        motifRetour: z.enum(["ABIME", "REFUSE", "PERIME"]).nullish(),
+      })
+    )
+    .min(1, "Ajoutez au moins un produit"),
+});
+
+export const livraisonActionSchema = z.object({
+  action: z.literal("ANNULER", { message: "Action invalide" }),
+});

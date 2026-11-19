@@ -23,7 +23,6 @@ export async function middleware(req: NextRequest) {
       role = null;
     }
   }
-
   // Pas connecté : retour à la connexion
   if (!role) {
     return NextResponse.redirect(new URL("/login", req.url));

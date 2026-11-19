@@ -1,12 +1,21 @@
 import type { ReactNode } from "react";
+import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { NAV } from "@/lib/nav";
 import Shell from "@/components/Shell";
 
 export default async function MagasinierLayout({ children }: { children: ReactNode }) {
   const user = await requireRole("MAGASINIER");
+  const bonsATraiter = await prisma.bonChargement.count({
+    where: { statut: { in: ["ENVOYE", "VALIDE"] } },
+  });
   return (
-    <Shell roleLabel="Magasinier" nav={NAV.MAGASINIER} user={{ nom: user.nom }}>
+    <Shell
+      roleLabel="Magasinier"
+      nav={NAV.MAGASINIER}
+      user={{ nom: user.nom }}
+      badges={{ "/magasinier/bons": bonsATraiter }}
+    >
       {children}
     </Shell>
   );

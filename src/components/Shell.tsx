@@ -11,6 +11,7 @@ import {
   SlidersHorizontal,
   Users,
   Warehouse,
+  Truck
 } from "lucide-react";
 import type { NavItem } from "@/lib/nav";
 import Button from "@/components/ui/Button";
@@ -23,6 +24,7 @@ const ICONS = {
   calendar: CalendarDays,
   warehouse: Warehouse,
   sliders: SlidersHorizontal,
+  truck: Truck,
 };
 
 export default function Shell({
