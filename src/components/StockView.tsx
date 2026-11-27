@@ -8,6 +8,7 @@ const TYPES: Record<string, { label: string; tone: "green" | "blue" | "orange" |
   ENTREE_FOURNISSEUR: { label: "Entrée fournisseur", tone: "green" },
   AJUSTEMENT: { label: "Ajustement", tone: "blue" },
   CHARGEMENT: { label: "Chargement camion", tone: "orange" },
+  DECHARGEMENT: { label: "Retour du camion", tone: "green" },
 };
 
 export default async function StockView() {

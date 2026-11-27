@@ -28,6 +28,7 @@ model Utilisateur {
   bonsControles       BonChargement[] @relation("BonMagasinier")
   bonsValides         BonChargement[] @relation("BonGerant")
   tournees            Tournee[]
+  ecartsDecides EcartTournee[] @relation("EcartDecide")
 }
 model Categorie {
   id       Int       @id @default(autoincrement())
@@ -50,6 +51,7 @@ model Produit {
   ajustements     AjustementStock[]
   lignesChargement LigneChargement[]
   lignesLivraison LigneLivraison[]
+  ecarts EcartTournee[]
 }
 model Secteur {
   id           Int           @id @default(autoincrement())
@@ -105,6 +107,8 @@ model MouvementStock {
   camion          Camion?         @relation(fields: [camionId], references: [id])
   bonId           Int?
   livraisonId     Int?
+  tourneeId       Int?
+  tournee         Tournee?        @relation(fields: [tourneeId], references: [id])
   livraison       Livraison?      @relation(fields: [livraisonId], references: [id])
   bon             BonChargement?  @relation(fields: [bonId], references: [id])
   @@index([produitId])
@@ -198,6 +202,10 @@ model Tournee {
   bonId     Int           @unique
   bon       BonChargement @relation(fields: [bonId], references: [id])
   livraisons Livraison[]
+  verifieLe  DateTime?
+  clotureeLe DateTime?
+  ecarts     EcartTournee[]
+  mouvements MouvementStock[]
   @@unique([livreurId, jour])
 }
 // Une livraison chez un client pendant la tournée. On ne la supprime jamais :
@@ -231,4 +239,27 @@ model LigneLivraison {
   produit        Produit   @relation(fields: [produitId], references: [id])
 
   @@unique([livraisonId, produitId])
+}
+
+// Écart constaté le soir. Écart = quantiteReelle - quantiteTheorique.
+// motif : CASSE, ERREUR_LIVRAISON, PRODUIT_MANQUANT, AUTRE
+// statut : EN_ATTENTE, ACCEPTE, EXPLICATION_DEMANDEE
+model EcartTournee {
+  id                Int          @id @default(autoincrement())
+  quantiteTheorique Int
+  quantiteReelle    Int
+  motif             String
+  commentaire       String?
+  statut            String       @default("EN_ATTENTE")
+  commentaireGerant String?
+  creeLe            DateTime     @default(now())
+  decideLe          DateTime?
+  tourneeId         Int
+  tournee           Tournee      @relation(fields: [tourneeId], references: [id])
+  produitId         Int
+  produit           Produit      @relation(fields: [produitId], references: [id])
+  decideParId       Int?
+  decidePar         Utilisateur? @relation("EcartDecide", fields: [decideParId], references: [id])
+
+  @@unique([tourneeId, produitId])
 }

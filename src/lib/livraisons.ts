@@ -15,6 +15,7 @@ export type LigneLivraisonSaisie = {
 // Enregistre une livraison. À appeler dans une transaction : tout ou rien.
 export async function enregistrerLivraison(
   tx: Db,
+
   livreurId: number,
   clientId: number,
   lignes: LigneLivraisonSaisie[]
@@ -86,6 +87,7 @@ export async function enregistrerLivraison(
       produitId: l.produitId,
       auteurId: livreurId,
       camionId: tournee.camionId,
+      tourneeId: tournee.id,
       livraisonId: livraison.id,
     };
     if (l.quantiteLivree > 0) {
@@ -140,6 +142,7 @@ export async function annulerLivraison(tx: Db, livreurId: number, livraisonId: n
       produitId: ligne.produitId,
       auteurId: livreurId,
       camionId: l.tournee.camionId,
+      tourneeId: l.tourneeId,
       livraisonId: l.id,
       type: "ANNULATION_LIVRAISON",
       motif: `Annulation de la livraison chez ${l.client.nomCommerce}`,

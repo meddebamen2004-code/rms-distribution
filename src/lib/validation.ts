@@ -136,3 +136,28 @@ export const livraisonSchema = z.object({
 export const livraisonActionSchema = z.object({
   action: z.literal("ANNULER", { message: "Action invalide" }),
 });
+
+export const verificationSchema = z.object({
+  reelles: z.array(
+    z.object({
+      produitId: z.coerce.number().int().positive("Produit requis"),
+      quantiteReelle: z.coerce.number().int("Nombre entier requis").min(0, "Quantité négative interdite"),
+      motif: z.enum(["CASSE", "ERREUR_LIVRAISON", "PRODUIT_MANQUANT", "AUTRE"]).nullish(),
+      commentaire: z.string().trim().nullish(),
+    })
+  ),
+});
+
+export const decisionEcartSchema = z.object({
+  decision: z.enum(["ACCEPTER", "DEMANDER_EXPLICATION"], { message: "Décision invalide" }),
+  commentaire: z.string().trim().optional(),
+});
+
+export const explicationSchema = z.object({
+  commentaire: z.string().trim().min(3, "Expliquez l'écart (3 caractères minimum)"),
+  motif: z.enum(["CASSE", "ERREUR_LIVRAISON", "PRODUIT_MANQUANT", "AUTRE"]).optional(),
+});
+
+export const tourneeActionSchema = z.object({
+  action: z.literal("DECHARGER", { message: "Action invalide" }),
+});
