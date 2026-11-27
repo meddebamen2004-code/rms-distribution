@@ -11,6 +11,7 @@ import {
   SlidersHorizontal,
   Users,
   Warehouse,
+  ClipboardList,
   Truck
 } from "lucide-react";
 import type { NavItem } from "@/lib/nav";
@@ -25,6 +26,7 @@ const ICONS = {
   warehouse: Warehouse,
   sliders: SlidersHorizontal,
   truck: Truck,
+  clipboard: ClipboardList,
 };
 
 export default function Shell({
@@ -148,7 +150,7 @@ export default function Shell({
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Ouvrir le menu"
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden print:hidden"
           >
             <Menu size={20} />
           </button>

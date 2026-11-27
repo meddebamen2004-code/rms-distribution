@@ -7,7 +7,8 @@ export type IconName =
   | "calendar"
   | "warehouse"
   | "sliders"
-  | "truck";
+  | "truck"
+  | "clipboard";
 export type NavItem = { href: string; label: string; icon: IconName };
 
 export const NAV: Record<Role, NavItem[]> = {
@@ -28,6 +29,7 @@ export const NAV: Record<Role, NavItem[]> = {
   ],
   LIVREUR: [
     { href: "/livreur", label: "Ma journée", icon: "dashboard" },
+    { href: "/livreur/livraisons", label: "Mes livraisons", icon: "clipboard" },
     { href: "/livreur/recharge", label: "Ma demande de recharge", icon: "truck" },
   ],
 };

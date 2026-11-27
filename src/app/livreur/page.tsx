@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Truck } from "lucide-react";
+import { ClipboardList, MapPin, Truck } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { clientsDuJour } from "@/lib/secteur";
 import PageHeader from "@/components/ui/PageHeader";
@@ -22,12 +22,23 @@ export default async function LivreurPage() {
 
       <Link
         href="/livreur/recharge"
-        className="mb-6 flex items-center gap-3 rounded-2xl bg-blue-600 p-5 text-white shadow-sm transition hover:bg-blue-700"
+        className="mb-4 flex items-center gap-3 rounded-2xl bg-blue-600 p-5 text-white shadow-sm transition hover:bg-blue-700"
       >
         <Truck size={24} />
         <span className="flex-1">
           <span className="block text-base font-semibold">Préparer ma demande de recharge</span>
           <span className="block text-sm text-blue-100">Pour la tournée de demain</span>
+        </span>
+      </Link>
+
+      <Link
+        href="/livreur/livraisons"
+        className="mb-6 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:bg-slate-50"
+      >
+        <ClipboardList size={24} className="text-blue-600" />
+        <span className="flex-1">
+          <span className="block text-base font-semibold text-slate-900">Mes livraisons du jour</span>
+          <span className="block text-sm text-slate-500">Enregistrer une livraison ou un retour</span>
         </span>
       </Link>
 

@@ -82,11 +82,10 @@ export async function enregistrerLivraison(
 
   const mouvements: Prisma.MouvementStockCreateManyInput[] = [];
   for (const l of lignes) {
-    const base = {
+        const base = {
       produitId: l.produitId,
       auteurId: livreurId,
       camionId: tournee.camionId,
-      tourneeId: tournee.id,
       livraisonId: livraison.id,
     };
     if (l.quantiteLivree > 0) {
@@ -137,11 +136,10 @@ export async function annulerLivraison(tx: Db, livreurId: number, livraisonId: n
 
   const mouvements: Prisma.MouvementStockCreateManyInput[] = [];
   for (const ligne of l.lignes) {
-    const base = {
+        const base = {
       produitId: ligne.produitId,
       auteurId: livreurId,
       camionId: l.tournee.camionId,
-      tourneeId: l.tourneeId,
       livraisonId: l.id,
       type: "ANNULATION_LIVRAISON",
       motif: `Annulation de la livraison chez ${l.client.nomCommerce}`,
